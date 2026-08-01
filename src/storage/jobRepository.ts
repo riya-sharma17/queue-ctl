@@ -28,6 +28,19 @@ export function insertJob(job: Job): void {
 }
 
 
+export function updateAttempts(id: string, attempts: number): void {
+    const statement = db.prepare(`
+        UPDATE jobs
+        SET attempts = ?, updated_at = ?
+        WHERE id = ?
+    `);
+
+    statement.run(
+        attempts,
+        new Date().toISOString(),
+        id
+    );
+}
 
 export function updateJobState(id: string, state: JobState): void {
     const statement = db.prepare(`
@@ -52,5 +65,19 @@ export function getNextPendingJob(): Job | undefined {
         LIMIT 1
     `);
 
-    return statement.get(JobState.Pending) as Job | undefined;
+    const row = statement.get(JobState.Pending) as any;
+
+    if (!row) {
+        return undefined;
+    }
+
+    return {
+        id: row.id,
+        command: row.command,
+        state: row.state,
+        attempts: row.attempts,
+        maxRetries: row.max_retries,
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at),
+    };
 }

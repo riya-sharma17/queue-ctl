@@ -1,9 +1,11 @@
 import { execa } from "execa";
 import {
     getNextPendingJob,
+    updateAttempts,
     updateJobState,
 } from "../storage/jobRepository";
 import { JobState } from "../enums/JobState";
+import { sleep } from "../utils/sleep";
 
 export async function startWorker(): Promise<void> {
     console.log("Worker started...");
@@ -31,7 +33,32 @@ export async function startWorker(): Promise<void> {
         console.log("Job state updated to COMPLETED");
         console.log("Job executed successfully.");
     } catch (error) {
-        updateJobState(job.id, JobState.Failed);
+        const attempts = job.attempts + 1;
+
+        updateAttempts(job.id, attempts);
+
+        if (attempts < job.maxRetries) {
+
+            const delay = Math.pow(2, attempts) * 1000;
+
+            console.log(
+                `Waiting ${delay / 1000} seconds before retry...`
+            );
+
+            await sleep(delay);
+
+            updateJobState(job.id, JobState.Pending);
+
+            console.log(
+                `Retrying... Attempt ${attempts}/${job.maxRetries}`
+            );
+        } else {
+
+            updateJobState(job.id, JobState.Dead);
+
+            console.log("Maximum retries reached.");
+            console.log("Moving job to Dead Letter Queue.");
+        }
 
         console.error("Job execution failed.");
         console.error(error);
