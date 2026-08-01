@@ -81,3 +81,46 @@ export function getNextPendingJob(): Job | undefined {
         updatedAt: new Date(row.updated_at),
     };
 }
+
+export function claimNextJob(): Job | undefined {
+
+    const transaction = db.transaction(() => {
+
+        const statement = db.prepare(`
+            SELECT *
+            FROM jobs
+            WHERE state = ?
+            ORDER BY created_at ASC
+            LIMIT 1
+        `);
+
+        const row = statement.get(JobState.Pending) as any;
+
+        if (!row) {
+            return undefined;
+        }
+
+        db.prepare(`
+            UPDATE jobs
+            SET state = ?, updated_at = ?
+            WHERE id = ?
+        `).run(
+            JobState.Processing,
+            new Date().toISOString(),
+            row.id
+        );
+
+        return {
+            id: row.id,
+            command: row.command,
+            state: JobState.Processing,
+            attempts: row.attempts,
+            maxRetries: row.max_retries,
+            createdAt: new Date(row.created_at),
+            updatedAt: new Date(row.updated_at),
+        } as Job;
+
+    });
+
+    return transaction();
+}
