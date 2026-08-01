@@ -3,6 +3,8 @@ import { registerEnqueueCommand } from "./cli/enqueue";
 import { registerWorkerCommand } from "./cli/worker";
 import { registerStatusCommand } from "./cli/status";
 import { registerListCommand } from "./cli/list";
+import { registerDlqCommand } from "./cli/dlq";
+import { registerConfigCommand } from "./cli/config";
 
 const program = new Command();
 
@@ -15,5 +17,7 @@ registerEnqueueCommand(program);
 registerWorkerCommand(program);
 registerStatusCommand(program);
 registerListCommand(program);
+registerDlqCommand(program);
+registerConfigCommand(program);
 
 program.parse();

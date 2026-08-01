@@ -182,3 +182,47 @@ export function getAllJobs(state?: string): Job[] {
         updatedAt: new Date(row.updated_at),
     }));
 }
+
+export function getDeadJobs(): Job[] {
+
+    const statement = db.prepare(`
+        SELECT *
+        FROM jobs
+        WHERE state = ?
+        ORDER BY created_at ASC
+    `);
+
+    const rows = statement.all(JobState.Dead) as any[];
+
+    return rows.map((row) => ({
+        id: row.id,
+        command: row.command,
+        state: row.state,
+        attempts: row.attempts,
+        maxRetries: row.max_retries,
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at),
+    }));
+}
+
+export function retryDeadJob(id: string): boolean {
+
+    const statement = db.prepare(`
+        UPDATE jobs
+        SET
+            state = ?,
+            attempts = 0,
+            updated_at = ?
+        WHERE id = ?
+        AND state = ?
+    `);
+
+    const result = statement.run(
+        JobState.Pending,
+        new Date().toISOString(),
+        id,
+        JobState.Dead
+    );
+
+    return result.changes > 0;
+}

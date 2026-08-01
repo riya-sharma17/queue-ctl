@@ -20,7 +20,24 @@ db.exec(`
         status TEXT NOT NULL,
         started_at TEXT NOT NULL,
         updated_at TEXT NOT NULL
-    );
+    )
 `);
+
+db.exec(`
+    CREATE TABLE IF NOT EXISTS config (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+    )
+`);
+
+db.prepare(`
+    INSERT OR IGNORE INTO config (key, value)
+    VALUES (?, ?)
+`).run("max_retries", "3");
+
+db.prepare(`
+    INSERT OR IGNORE INTO config (key, value)
+    VALUES (?, ?)
+`).run("backoff_base", "2");
 
 export default db;

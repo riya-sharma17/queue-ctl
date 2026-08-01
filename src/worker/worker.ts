@@ -10,6 +10,7 @@ import {
     registerWorker,
     stopWorker,
 } from "../storage/workerRepository";
+import { getConfig } from "../storage/configRepository";
 
 export async function startWorker(): Promise<void> {
 
@@ -61,7 +62,9 @@ export async function startWorker(): Promise<void> {
 
             if (attempts < job.maxRetries) {
 
-                const delay = Math.pow(2, attempts) * 1000;
+                const base = Number(getConfig("backoff_base"));
+
+                const delay = Math.pow(base, attempts) * 1000;
 
                 console.log(
                     `Waiting ${delay / 1000} seconds before retry...`
