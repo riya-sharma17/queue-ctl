@@ -17,8 +17,10 @@
 
     // Other Outputs
     "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
+    "declaration": false,
+    "declarationMap": false,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
 
     // Stricter Typechecking Options
     "noUncheckedIndexedAccess": true,
@@ -35,10 +37,10 @@
     // Recommended Options
     "strict": true,
     "jsx": "react-jsx",
-    "verbatimModuleSyntax": true,
+    // "verbatimModuleSyntax": true,
     "isolatedModules": true,
-    "noUncheckedSideEffectImports": true,
-    "moduleDetection": "force",
+    // "noUncheckedSideEffectImports": true,
+    // "moduleDetection": "force",
     "skipLibCheck": true,
   }
 }
