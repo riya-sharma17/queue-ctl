@@ -4,7 +4,7 @@
   "description": "��#\u0000 \u0000q\u0000u\u0000e\u0000u\u0000e\u0000-\u0000c\u0000t\u0000l\u0000\r\u0000 \u0000",
   "main": "index.js",
   "scripts": {
-   "dev": "nodemon --watch src --ext ts --exec ts-node src/index.ts",
+   "dev": "npx ts-node src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js"
   },
