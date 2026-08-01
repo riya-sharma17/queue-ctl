@@ -124,3 +124,61 @@ export function claimNextJob(): Job | undefined {
 
     return transaction();
 }
+
+export function getJobCounts() {
+
+    const statement = db.prepare(`
+        SELECT
+            COUNT(*) as total,
+            SUM(CASE WHEN state = 'pending' THEN 1 ELSE 0 END) as pending,
+            SUM(CASE WHEN state = 'processing' THEN 1 ELSE 0 END) as processing,
+            SUM(CASE WHEN state = 'completed' THEN 1 ELSE 0 END) as completed,
+            SUM(CASE WHEN state = 'dead' THEN 1 ELSE 0 END) as dead
+        FROM jobs
+    `);
+
+    return statement.get() as {
+        total: number;
+        pending: number;
+        processing: number;
+        completed: number;
+        dead: number;
+    };
+}
+
+export function getAllJobs(state?: string): Job[] {
+
+    let rows: any[];
+
+    if (state) {
+
+        const statement = db.prepare(`
+            SELECT *
+            FROM jobs
+            WHERE state = ?
+            ORDER BY created_at ASC
+        `);
+
+        rows = statement.all(state) as any[];
+
+    } else {
+
+        const statement = db.prepare(`
+            SELECT *
+            FROM jobs
+            ORDER BY created_at ASC
+        `);
+
+        rows = statement.all() as any[];
+    }
+
+    return rows.map((row) => ({
+        id: row.id,
+        command: row.command,
+        state: row.state,
+        attempts: row.attempts,
+        maxRetries: row.max_retries,
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at),
+    }));
+}

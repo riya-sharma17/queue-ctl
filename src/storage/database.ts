@@ -14,4 +14,13 @@ db.exec(`
     )
 `);
 
+db.exec(`
+    CREATE TABLE IF NOT EXISTS workers (
+        id TEXT PRIMARY KEY,
+        status TEXT NOT NULL,
+        started_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+    );
+`);
+
 export default db;

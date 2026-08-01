@@ -6,9 +6,29 @@ import {
 } from "../storage/jobRepository";
 import { JobState } from "../enums/JobState";
 import { sleep } from "../utils/sleep";
+import {
+    registerWorker,
+    stopWorker,
+} from "../storage/workerRepository";
 
 export async function startWorker(): Promise<void> {
-    console.log("Worker started...");
+
+    const workerId = `worker-${process.pid}`;
+
+    registerWorker(workerId);
+
+    console.log(`${workerId} started...`);
+
+    process.on("SIGINT", () => {
+
+        console.log(`Stopping ${workerId}...`);
+
+        stopWorker(workerId);
+
+        console.log(`${workerId} stopped.`);
+
+        process.exit(0);
+    });
 
     while (true) {
 
@@ -19,13 +39,11 @@ export async function startWorker(): Promise<void> {
             continue;
         }
 
-        updateJobState(job.id, JobState.Processing);
-        console.log("Job state updated to PROCESSING");
-
         console.log("Job found:");
         console.log(job);
 
         try {
+
             await execa(job.command, {
                 shell: true,
             });
@@ -34,6 +52,7 @@ export async function startWorker(): Promise<void> {
 
             console.log("Job state updated to COMPLETED");
             console.log("Job executed successfully.");
+
         } catch (error) {
 
             const attempts = job.attempts + 1;

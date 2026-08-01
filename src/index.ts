@@ -1,14 +1,19 @@
 import { Command } from "commander";
 import { registerEnqueueCommand } from "./cli/enqueue";
 import { registerWorkerCommand } from "./cli/worker";
+import { registerStatusCommand } from "./cli/status";
+import { registerListCommand } from "./cli/list";
 
 const program = new Command();
 
-program.name("my-cli")
-.description("A simple CLI tool")
-.version("1.0.0");
+program
+    .name("my-cli")
+    .description("A simple CLI tool")
+    .version("1.0.0");
 
 registerEnqueueCommand(program);
 registerWorkerCommand(program);
+registerStatusCommand(program);
+registerListCommand(program);
 
 program.parse();
