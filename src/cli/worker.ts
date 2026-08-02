@@ -1,6 +1,7 @@
 import { Command } from "commander";
 import { spawn } from "child_process";
 import { startWorker } from "../worker/worker";
+import { stopAllWorkers } from "../storage/workerRepository";
 
 export function registerWorkerCommand(program: Command): void {
 
@@ -37,6 +38,17 @@ export function registerWorkerCommand(program: Command): void {
                 );
 
             }
+
+        });
+
+    worker
+        .command("stop")
+        .description("Stop all workers")
+        .action(() => {
+
+            stopAllWorkers();
+
+            console.log("Stopping all workers...");
 
         });
 

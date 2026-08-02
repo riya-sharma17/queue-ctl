@@ -16,7 +16,7 @@ export async function startWorker(): Promise<void> {
 
     const workerId = `worker-${process.pid}`;
 
-    registerWorker(workerId);
+    registerWorker(workerId, process.pid);
 
     console.log(`${workerId} started...`);
 
