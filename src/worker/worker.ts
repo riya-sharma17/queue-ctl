@@ -9,6 +9,7 @@ import { sleep } from "../utils/sleep";
 import {
     registerWorker,
     stopWorker,
+    isWorkerActive,
 } from "../storage/workerRepository";
 import { getConfig } from "../storage/configRepository";
 
@@ -26,16 +27,21 @@ export async function startWorker(): Promise<void> {
 
         stopWorker(workerId);
 
-        console.log(`${workerId} stopped.`);
-
-        process.exit(0);
     });
 
     while (true) {
 
+        if (!isWorkerActive(workerId)) {
+
+            console.log(`${workerId} stopped.`);
+
+            return;
+        }
+
         const job = claimNextJob();
 
         if (!job) {
+
             await sleep(2000);
             continue;
         }
@@ -43,24 +49,41 @@ export async function startWorker(): Promise<void> {
         console.log("Job found:");
         console.log(job);
 
-        try {
+        let attempts = job.attempts;
 
-            await execa(job.command, {
-                shell: true,
-            });
+        while (attempts < job.maxRetries) {
 
-            updateJobState(job.id, JobState.Completed);
+            try {
 
-            console.log("Job state updated to COMPLETED");
-            console.log("Job executed successfully.");
+                await execa(job.command, {
+                    shell: true,
+                });
 
-        } catch (error) {
+                updateJobState(job.id, JobState.Completed);
 
-            const attempts = job.attempts + 1;
+                console.log("Job state updated to COMPLETED");
+                console.log("Job executed successfully.");
 
-            updateAttempts(job.id, attempts);
+                break;
 
-            if (attempts < job.maxRetries) {
+            } catch (error) {
+
+                attempts++;
+
+                updateAttempts(job.id, attempts);
+
+                console.error("Job execution failed.");
+                console.error(error);
+
+                if (attempts >= job.maxRetries) {
+
+                    updateJobState(job.id, JobState.Dead);
+
+                    console.log("Maximum retries reached.");
+                    console.log("Moving job to Dead Letter Queue.");
+
+                    break;
+                }
 
                 const base = Number(getConfig("backoff_base"));
 
@@ -72,22 +95,17 @@ export async function startWorker(): Promise<void> {
 
                 await sleep(delay);
 
-                updateJobState(job.id, JobState.Pending);
-
                 console.log(
-                    `Retrying... Attempt ${attempts}/${job.maxRetries}`
+                    `Retrying... Attempt ${attempts + 1}/${job.maxRetries}`
                 );
-
-            } else {
-
-                updateJobState(job.id, JobState.Dead);
-
-                console.log("Maximum retries reached.");
-                console.log("Moving job to Dead Letter Queue.");
             }
+        }
 
-            console.error("Job execution failed.");
-            console.error(error);
+        if (!isWorkerActive(workerId)) {
+
+            console.log(`${workerId} stopped.`);
+
+            return;
         }
     }
 }
