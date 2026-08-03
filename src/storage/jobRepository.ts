@@ -235,3 +235,17 @@ export function retryDeadJob(id: string): boolean {
 
     return result.changes > 0;
 }
+
+export function getAverageRetries(): number {
+
+    const statement = db.prepare(`
+        SELECT AVG(attempts) AS averageRetries
+        FROM jobs
+    `);
+
+    const result = statement.get() as {
+        averageRetries: number | null;
+    };
+
+    return result.averageRetries ?? 0;
+}

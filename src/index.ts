@@ -5,6 +5,7 @@ import { registerStatusCommand } from "./cli/status";
 import { registerListCommand } from "./cli/list";
 import { registerDlqCommand } from "./cli/dlq";
 import { registerConfigCommand } from "./cli/config";
+import { registerMetricsCommand } from "./cli/metrics";
 
 const program = new Command();
 
@@ -40,5 +41,6 @@ registerStatusCommand(program);
 registerListCommand(program);
 registerDlqCommand(program);
 registerConfigCommand(program);
+registerMetricsCommand(program);
 
 void program.parseAsync(process.argv).catch(handleCliError);
