@@ -16,17 +16,18 @@ export function registerListCommand(program: Command) {
                 return;
             }
 
-            console.log("------------------------------------------------------------");
-            console.log("ID\tSTATE\t\tATTEMPTS\tCOMMAND");
-            console.log("------------------------------------------------------------");
+            console.log("----------------------------------------------------------------------------");
+            console.log("ID\tSTATE\t\tPRIORITY\tATTEMPTS\tCOMMAND");
+            console.log("----------------------------------------------------------------------------");
 
             jobs.forEach((job) => {
                 console.log(
-                    `${job.id}\t${job.state}\t\t${job.attempts}\t\t${job.command}`
+                    `${job.id}\t${job.state}\t\t${job.priority}\t\t${job.attempts}\t\t${job.command}`
                 );
             });
 
-            console.log("------------------------------------------------------------");
+            console.log("----------------------------------------------------------------------------");
+
         });
 
 }

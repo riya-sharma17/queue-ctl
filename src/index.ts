@@ -8,10 +8,31 @@ import { registerConfigCommand } from "./cli/config";
 
 const program = new Command();
 
+function handleCliError(error: unknown): void {
+    if (error instanceof Error && error.name === "CommanderError") {
+        process.exitCode = 1;
+        return;
+    }
+
+    if (error instanceof Error) {
+        console.error(error.message);
+    } else {
+        console.error(String(error));
+    }
+
+    process.exitCode = 1;
+}
+
+process.on("uncaughtException", handleCliError);
+process.on("unhandledRejection", handleCliError);
+
 program
-    .name("my-cli")
-    .description("A simple CLI tool")
+    .name("queuectl")
+    .description("Queue control CLI")
     .version("1.0.0");
+
+program.exitOverride();
+program.showHelpAfterError();
 
 registerEnqueueCommand(program);
 registerWorkerCommand(program);
@@ -20,4 +41,4 @@ registerListCommand(program);
 registerDlqCommand(program);
 registerConfigCommand(program);
 
-program.parse();
+void program.parseAsync(process.argv).catch(handleCliError);

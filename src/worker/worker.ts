@@ -45,9 +45,7 @@ export async function startWorker(): Promise<void> {
             await sleep(2000);
             continue;
         }
-
-        console.log("Job found:");
-        console.log(job);
+        console.log(`Processing job: ${job.id}`);
 
         let attempts = job.attempts;
 
@@ -61,7 +59,6 @@ export async function startWorker(): Promise<void> {
 
                 updateJobState(job.id, JobState.Completed);
 
-                console.log("Job state updated to COMPLETED");
                 console.log("Job executed successfully.");
 
                 break;
@@ -72,7 +69,7 @@ export async function startWorker(): Promise<void> {
 
                 updateAttempts(job.id, attempts);
 
-                console.error("Job execution failed.");
+                console.error(`Job ${job.id} failed.`);
                 console.error(error);
 
                 if (attempts >= job.maxRetries) {

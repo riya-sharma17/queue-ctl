@@ -9,6 +9,7 @@ db.exec(`
         state TEXT NOT NULL,
         attempts INTEGER NOT NULL,
         max_retries INTEGER NOT NULL,
+        priority INTEGER NOT NULL DEFAULT 5,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL
     )

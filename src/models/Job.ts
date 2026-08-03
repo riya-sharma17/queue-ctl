@@ -5,6 +5,7 @@ export interface Job{
     command: string;
     state: JobState;
     attempts: number;
+    priority: number;
     maxRetries: number;
     createdAt: Date;
     updatedAt: Date;

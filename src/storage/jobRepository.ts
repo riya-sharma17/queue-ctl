@@ -3,6 +3,7 @@ import { Job } from "../models/Job";
 import { JobState } from "../enums/JobState";
 
 export function insertJob(job: Job): void {
+
     const statement = db.prepare(`
         INSERT INTO jobs (
             id,
@@ -10,10 +11,11 @@ export function insertJob(job: Job): void {
             state,
             attempts,
             max_retries,
+            priority,
             created_at,
             updated_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     statement.run(
@@ -22,13 +24,14 @@ export function insertJob(job: Job): void {
         job.state,
         job.attempts,
         job.maxRetries,
+        job.priority,
         job.createdAt.toISOString(),
         job.updatedAt.toISOString()
     );
 }
 
-
 export function updateAttempts(id: string, attempts: number): void {
+
     const statement = db.prepare(`
         UPDATE jobs
         SET attempts = ?, updated_at = ?
@@ -43,6 +46,7 @@ export function updateAttempts(id: string, attempts: number): void {
 }
 
 export function updateJobState(id: string, state: JobState): void {
+
     const statement = db.prepare(`
         UPDATE jobs
         SET state = ?, updated_at = ?
@@ -57,11 +61,12 @@ export function updateJobState(id: string, state: JobState): void {
 }
 
 export function getNextPendingJob(): Job | undefined {
+
     const statement = db.prepare(`
         SELECT *
         FROM jobs
         WHERE state = ?
-        ORDER BY created_at ASC
+        ORDER BY priority ASC, created_at ASC
         LIMIT 1
     `);
 
@@ -77,6 +82,7 @@ export function getNextPendingJob(): Job | undefined {
         state: row.state,
         attempts: row.attempts,
         maxRetries: row.max_retries,
+        priority: row.priority,
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at),
     };
@@ -90,7 +96,7 @@ export function claimNextJob(): Job | undefined {
             SELECT *
             FROM jobs
             WHERE state = ?
-            ORDER BY created_at ASC
+            ORDER BY priority ASC, created_at ASC
             LIMIT 1
         `);
 
@@ -116,6 +122,7 @@ export function claimNextJob(): Job | undefined {
             state: JobState.Processing,
             attempts: row.attempts,
             maxRetries: row.max_retries,
+            priority: row.priority,
             createdAt: new Date(row.created_at),
             updatedAt: new Date(row.updated_at),
         } as Job;
@@ -156,7 +163,7 @@ export function getAllJobs(state?: string): Job[] {
             SELECT *
             FROM jobs
             WHERE state = ?
-            ORDER BY created_at ASC
+            ORDER BY priority ASC, created_at ASC
         `);
 
         rows = statement.all(state) as any[];
@@ -166,7 +173,7 @@ export function getAllJobs(state?: string): Job[] {
         const statement = db.prepare(`
             SELECT *
             FROM jobs
-            ORDER BY created_at ASC
+            ORDER BY priority ASC, created_at ASC
         `);
 
         rows = statement.all() as any[];
@@ -178,6 +185,7 @@ export function getAllJobs(state?: string): Job[] {
         state: row.state,
         attempts: row.attempts,
         maxRetries: row.max_retries,
+        priority: row.priority,
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at),
     }));
@@ -189,7 +197,7 @@ export function getDeadJobs(): Job[] {
         SELECT *
         FROM jobs
         WHERE state = ?
-        ORDER BY created_at ASC
+        ORDER BY priority ASC, created_at ASC
     `);
 
     const rows = statement.all(JobState.Dead) as any[];
@@ -200,6 +208,7 @@ export function getDeadJobs(): Job[] {
         state: row.state,
         attempts: row.attempts,
         maxRetries: row.max_retries,
+        priority: row.priority,
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at),
     }));
