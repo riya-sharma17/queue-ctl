@@ -29,7 +29,7 @@ process.on("unhandledRejection", handleCliError);
 
 program
     .name("queuectl")
-    .description("Queue control CLI")
+    .description("Persistent Job Queue CLI with workers, retries, and DLQ")
     .version("1.0.0");
 
 program.exitOverride();
