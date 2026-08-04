@@ -1,3 +1,4 @@
 node_modules
 dist/
 queue.db
+package-lock.json
