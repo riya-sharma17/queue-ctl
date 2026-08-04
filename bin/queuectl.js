@@ -1,3 +1,4 @@
 #!/usr/bin/env node
 
-require("../dist/index.js");
+require("ts-node/register/transpile-only");
+require("../src/index.ts");
